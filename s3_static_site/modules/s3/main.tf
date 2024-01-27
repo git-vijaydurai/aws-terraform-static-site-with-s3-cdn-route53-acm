@@ -23,24 +23,8 @@ resource "aws_s3_bucket_acl" "mys3acl" {
 resource "aws_s3_bucket_policy" "mys3_policy" {
   bucket = aws_s3_bucket.mys3.id
 
-  policy = jsonencode({
-    Version = "2008-10-17",
-    Id      = "PolicyForCloudFrontPrivateContent",
-    Statement = [
-      {
-        Sid    = "AllowCloudFrontServicePrincipal",
-        Effect = "Allow",
-        Principal = {
-          Service = "cloudfront.amazonaws.com"
-        },
-        Action   = "s3:GetObject",
-        Resource = "${aws_s3_bucket.mys3.arn}/*",
-        Condition = {
-          StringEquals = {
-            "aws:SourceArn" = "${var.cdn_arn}"
-          }
-        }
-      }
-    ]
+  policy = templatefile("${path.module}/s3_policy.tpl", {
+    mys3arn = aws_s3_bucket.mys3.arn
+    cdnarn  = var.cdn_arn
   })
 }
